@@ -1,4 +1,3 @@
-bing-ads-php-sdk
-================
-
-Bing Ads API SDK for PHP
+zf2-bingads
+===========
+Bing Ads API SDK for Zend Framework 2
