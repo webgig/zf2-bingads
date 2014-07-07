@@ -1,7 +1,7 @@
 {
     "name": "webgig/zf2-bingads",
-    "description": "Bing Ads API Version 9 Client Library for PHP.",
-    "keywords": ["bing", "bingads","sdk","api"],
+    "description": "Bing Ads API Version 9 Client Library for ZF2.",
+    "keywords": ["bing", "bingads","sdk","api","zf2"],
     "type": "librabry",
     "homepage": "https://github.com/webgig/zf2-bingads",
     "license": "Apache-2.0",
@@ -17,7 +17,7 @@
     ],
     "require": {
         "php": ">=5.3.3",
-        "zendframework/zendframework": "2.*",
+        "zendframework/zendframework": "2.*"
 
     },
     "autoload": {
