@@ -1,0 +1,28 @@
+{
+    "name": "webgig/zf2-bingads",
+    "description": "Bing Ads API Version 9 Client Library for PHP.",
+    "keywords": ["bing", "bingads","sdk","api"],
+    "type": "librabry",
+    "homepage": "https://github.com/webgig/zf2-bingads",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Microsoft",
+            "homepage": "http://code.msdn.microsoft.com/PHP-Classes-for-Bing-Ads-c9762281"
+        },
+        {
+            "name": "Sagar Bhandari",
+            "email": "sagar@thewebgig.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3",
+        "zendframework/zendframework": "2.*",
+
+    },
+    "autoload": {
+        "psr-0": {"BingAds": "src/"},
+        "classmap": ["./Module.php"]
+
+    }
+}
