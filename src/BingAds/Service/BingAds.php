@@ -82,7 +82,7 @@ class BingAds  implements ServiceManagerAwareInterface
                     break;
 
                 case 'CampaignManagementService':
-                    $wsdl    = "https://clientcenter.api.bingads.microsoft.com/Api/CampaignManagement/v9/CampaignManagement.svc?singleWsdl";
+                    $wsdl    = "https://api.bingads.microsoft.com/Api/Advertiser/CampaignManagement/V9/CampaignManagementService.svc?singleWsdl";
 
                 default:
                     # code...
@@ -154,28 +154,6 @@ class BingAds  implements ServiceManagerAwareInterface
         return $response;
     }
 
-     /**
-     * Get client_id.
-     *
-     * @return string
-     */
-    public function getAccountId()
-    {
-        return $this->account_id;
-    }
-
-    /**
-     * Set client_id.
-     *
-     * @param string $client_id
-     * @return ReportsApi
-     */
-    public function setAccountId($account_id)
-    {
-        $this->account_id   =  $account_id;
-
-        return $this;
-    }
         /**
      * Retrieve service manager instance
      *
