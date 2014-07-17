@@ -10,12 +10,10 @@ use BingAds\Proxy\ClientProxy;
 class BingAds  implements ServiceManagerAwareInterface
 {
 
-    const APP_NAME = 'Jimmy - Google Analytics Reporting Application';
-
-
-    const AUTH_URL = "https://login.live.com/oauth20_authorize.srf";
-
+    const APP_NAME            = 'Jimmy - Google Analytics Reporting Application';
+    const AUTH_URL            = "https://login.live.com/oauth20_authorize.srf";
     const ACCESS_TOKEN_EX_URL = "https://login.live.com/oauth20_token.srf";
+    const REFRESH_BUFFER      = 60;
 
     protected $scope        = array("bingads.manage");
 
@@ -47,12 +45,9 @@ class BingAds  implements ServiceManagerAwareInterface
     // For oauth2
     public function setAccessToken($accessToken){
 
-         if($accessToken){
-            $this->access_token = $accessToken;
-        } else {
-            return false;
-        }
+        $this->access_token = $accessToken;
 
+       return $this;
     }
 
     public function getAccessToken($accessToken){
@@ -72,7 +67,7 @@ class BingAds  implements ServiceManagerAwareInterface
     }
 
 
-    public function getService($serviceName){
+    public function constructProxy($serviceName){
 
             switch ($serviceName) {
                 case 'CustomerManagementService':
@@ -84,16 +79,35 @@ class BingAds  implements ServiceManagerAwareInterface
                 case 'CampaignManagementService':
                     $wsdl    = "https://api.bingads.microsoft.com/Api/Advertiser/CampaignManagement/V9/CampaignManagementService.svc?singleWsdl";
 
+                    break;
+
+                case 'ReportingService':
+                    $wsdl    = "https://api.bingads.microsoft.com/Api/Advertiser/Reporting/V9/ReportingService.svc?singleWsdl";
+                    break;
                 default:
                     # code...
                     break;
             }
 
-        $access_token = json_decode($this->getAccessToken())->access_token;
-        $proxy   = ClientProxy::ConstructWithCredentials($wsdl, null,null, $this->getConfig()['developer_token'], $access_token);
+        $access_token = $this->getAccessToken()['access_token'];
 
-    return $proxy->GetService();
+        $proxy   = ClientProxy::ConstructWithAccountId($wsdl, "Jimmy2013","Webmarketers22", $this->getConfig()['developer_token'], $this->getAccountId(), null);
+        //$proxy   = ClientProxy::ConstructWithAccountId($wsdl, null,null, $this->getConfig()['developer_token'], $this->getAccountId(), $access_token);
+
+
+    return $proxy;
     }
+
+    public function getProxy($serviceName){
+
+        return $this->constructProxy($serviceName);
+    }
+
+    public function getService($serviceName){
+
+        return $this->constructProxy($serviceName)->GetService();
+    }
+
 
     public function getAuthorizationUrl(){
         $_SESSION['state']  = rand(0,999999999);
@@ -118,6 +132,51 @@ class BingAds  implements ServiceManagerAwareInterface
             'grant_type'    => 'authorization_code',
             'code'          => $code,
         );
+
+        $response = $this->makeRequest($queryParams);
+
+        if(!$response) return false;
+
+        $response_arr = (array)json_decode($response);
+
+        return array_merge($response_arr, array('timestamp' => time()));
+    }
+
+    public function verifyApiAccess(array $credentials){
+
+        if($this->isAccessTokenExpiring($credentials)){
+            if( $credentials = $this->getAccessTokenFromRefreshToken($credentials)){
+                return array(true,$credentials);
+            }
+        }
+
+        return array(false,$credentials);
+    }
+
+    public function getAccessTokenFromRefreshToken(array $credentials){
+
+        $queryParams = array(
+            'client_id'     => $this->getConfig()['client_id'],
+            'client_secret' => $this->getConfig()['client_secret'],
+            'redirect_uri'  => $this->getConfig()['redirect_uri'],
+            'grant_type'    => 'refresh_token',
+            'refresh_token' => $credentials['refresh_token'],
+        );
+
+        $response = $this->makeRequest($queryParams);
+
+        if(!$response) return false;
+
+        $response_arr = (array)json_decode($response);
+
+        return array_merge($response_arr, array('timestamp' => time()));
+    }
+
+    public function makeRequest(array $queryParams){
+
+        if(!$queryParams)
+            return false;
+
         $ch = curl_init();
 
         $query = "";
@@ -154,7 +213,37 @@ class BingAds  implements ServiceManagerAwareInterface
         return $response;
     }
 
-        /**
+    public function isAccessTokenExpiring(array $credentials) {
+        $expiry = $this->getExpiryTimestamp($credentials);
+
+        if ($expiry) {
+          // Subtract the refresh buffer.
+          $expiry -= self::REFRESH_BUFFER;
+
+          // Test if expiry has passed.
+          return $expiry < time();
+        }
+
+        return FALSE;
+      }
+
+      private function getExpiryTimestamp(array $credentials) {
+        if (empty($credentials['timestamp'])
+            || empty($credentials['expires_in'])) {
+          return FALSE;
+        }
+
+        // Set to refreshed time.
+        $expires = intval($credentials['timestamp']);
+
+        // Add the expiry value.
+        $expires += intval($credentials['expires_in']);
+
+        return $expires;
+      }
+
+
+   /**
      * Retrieve service manager instance
      *
      * @return ServiceManager
