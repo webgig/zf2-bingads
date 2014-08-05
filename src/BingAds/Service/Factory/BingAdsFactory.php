@@ -17,7 +17,7 @@ class BingAdsFactory implements FactoryInterface
         $config          = $serviceLocator->get('Config');
         $bing_api_config = $config['bing-api-config'];
 
-        $bing_api_config['redirect_uri'] = "http://jimmy.com/authcallback";
+       // $bing_api_config['redirect_uri'] = "http://jimmy.com/authcallback";
         $config = array(
                     'user_agent'      => $bing_api_config['user_agent'],
                     'client_id'       => $bing_api_config['client_id'],
